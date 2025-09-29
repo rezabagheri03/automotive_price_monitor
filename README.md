@@ -24,7 +24,7 @@ A comprehensive system for scraping prices of automotive parts and accessories f
 │ MySQL Database │
 └─────────────────────────────────────────────────────────────────┘
 
-text
+
 
 ## 🚀 Quick Start
 
@@ -40,13 +40,13 @@ text
 git clone <repository-url>
 cd automotive_price_monitor
 
-text
+
 
 2. **Run setup script**
 chmod +x scripts/setup_environment.sh
 sudo ./scripts/setup_environment.sh
 
-text
+
 
 3. **Configure environment**
 cp .env.example .env
@@ -54,17 +54,17 @@ cp .env.example .env
 Edit .env with your database credentials and API keys
 nano .env
 
-text
+
 
 4. **Initialize database**
 python database/migrations.py
 
-text
+
 
 5. **Start the dashboard**
 python run.py
 
-text
+
 
 ### Target Websites
 - [اتونیک](https://auto-nik.com/) - ABS, ECU & Wiring
@@ -110,7 +110,7 @@ python scripts/run_scraper.py --spider autonik
 Test mode (limited products)
 python scripts/run_scraper.py --test
 
-text
+
 
 ### Updating WooCommerce
 Generate CSV and update WooCommerce
@@ -119,7 +119,7 @@ python scripts/update_prices.py --price-type avg
 Available price types: avg, min, max
 python scripts/update_prices.py --price-type min
 
-text
+
 
 ### Dashboard Access
 - URL: `http://your-server:5000`
@@ -142,7 +142,7 @@ automotive_price_monitor/
 ├── deployment/ # Production deployment configs
 └── logs/ # Application logs
 
-text
+
 
 ## 🔒 Security Features
 
@@ -170,7 +170,6 @@ Run specific test category
 python -m pytest tests/test_scrapers.py
 python -m pytest tests/test_data_processor.py
 
-text
 
 ## 📝 License
 
