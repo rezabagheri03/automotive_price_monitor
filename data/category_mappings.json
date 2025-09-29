@@ -1,0 +1,156 @@
+{
+  "category_mappings": {
+    "اکتان و مکمل ها": {
+      "english": "Octane & Additives",
+      "keywords": ["octane", "additive", "fuel additive", "اکتان", "مکمل", "افزودنی"],
+      "subcategories": [
+        "Fuel Additives",
+        "Octane Boosters", 
+        "Engine Cleaners",
+        "Fuel System Cleaners"
+      ]
+    },
+    "رینگ و لاستیک": {
+      "english": "Wheels & Tires",
+      "keywords": ["wheel", "tire", "rim", "رینگ", "لاستیک", "چرخ"],
+      "subcategories": [
+        "Alloy Wheels",
+        "Steel Wheels", 
+        "Summer Tires",
+        "Winter Tires",
+        "All-Season Tires"
+      ]
+    },
+    "سیستم خنک کننده": {
+      "english": "Cooling System",
+      "keywords": ["cooling", "radiator", "coolant", "thermostat", "خنک کننده", "رادیاتور"],
+      "subcategories": [
+        "Radiators",
+        "Coolant Fluid",
+        "Water Pumps",
+        "Thermostats",
+        "Cooling Fans"
+      ]
+    },
+    "قطعات موتوری": {
+      "english": "Engine Parts", 
+      "keywords": ["engine", "motor", "piston", "cylinder", "موتور", "پیستون"],
+      "subcategories": [
+        "Pistons",
+        "Cylinder Heads",
+        "Engine Blocks",
+        "Gaskets",
+        "Timing Belts"
+      ]
+    },
+    "لوازم جانبی خودرو": {
+      "english": "Accessories",
+      "keywords": ["accessory", "decoration", "interior", "جانبی", "تزئینی"],
+      "subcategories": [
+        "Interior Accessories",
+        "Exterior Accessories", 
+        "Electronic Accessories",
+        "Comfort Accessories"
+      ]
+    },
+    "جلوبندی و تعلیق و سیستم فرمان": {
+      "english": "Suspension & Steering",
+      "keywords": ["suspension", "steering", "shock", "strut", "تعلیق", "فرمان", "جلوبندی"],
+      "subcategories": [
+        "Shock Absorbers",
+        "Struts",
+        "Springs",
+        "Steering Components",
+        "Ball Joints"
+      ]
+    },
+    "سوخت رسانی و احتراق و اگزوز": {
+      "english": "Fuel & Exhaust",
+      "keywords": ["fuel", "exhaust", "injection", "manifold", "سوخت", "اگزوز"],
+      "subcategories": [
+        "Fuel Injectors",
+        "Fuel Pumps",
+        "Exhaust Systems",
+        "Catalytic Converters",
+        "Mufflers"
+      ]
+    },
+    "فیلتر و صافی": {
+      "english": "Filters",
+      "keywords": ["filter", "air filter", "oil filter", "fuel filter", "فیلتر", "صافی"],
+      "subcategories": [
+        "Air Filters",
+        "Oil Filters", 
+        "Fuel Filters",
+        "Cabin Filters",
+        "Transmission Filters"
+      ]
+    },
+    "گیربکس و انتقال قدرت": {
+      "english": "Transmission",
+      "keywords": ["transmission", "gearbox", "clutch", "driveshaft", "گیربکس", "کلاچ"],
+      "subcategories": [
+        "Manual Transmissions",
+        "Automatic Transmissions",
+        "Clutch Systems",
+        "Driveshafts",
+        "CV Joints"
+      ]
+    },
+    "لوازم مصرفی": {
+      "english": "Consumables",
+      "keywords": ["consumable", "maintenance", "service", "مصرفی", "نگهداری"],
+      "subcategories": [
+        "Spark Plugs",
+        "Wiper Blades",
+        "Light Bulbs",
+        "Fuses",
+        "Belts"
+      ]
+    },
+    "روغن و مایعات": {
+      "english": "Oils & Fluids",
+      "keywords": ["oil", "fluid", "lubricant", "grease", "روغن", "مایع"],
+      "subcategories": [
+        "Engine Oil",
+        "Transmission Fluid",
+        "Brake Fluid",
+        "Power Steering Fluid",
+        "Coolant"
+      ]
+    },
+    "قطعات بدنه و داخل کابین": {
+      "english": "Body & Interior",
+      "keywords": ["body", "interior", "panel", "seat", "بدنه", "کابین"],
+      "subcategories": [
+        "Body Panels",
+        "Interior Trim",
+        "Seats",
+        "Door Components",
+        "Window Components"
+      ]
+    },
+    "لوازم الکترونیک و سنسورها": {
+      "english": "Electronics & Sensors",
+      "keywords": ["electronic", "sensor", "ecu", "computer", "الکترونیک", "سنسور"],
+      "subcategories": [
+        "ECU Units",
+        "Sensors",
+        "Wiring Harnesses", 
+        "Control Modules",
+        "Diagnostic Tools"
+      ]
+    },
+    "سیستم ترمز": {
+      "english": "Brake System",
+      "keywords": ["brake", "disc", "pad", "caliper", "ترمز", "دیسک"],
+      "subcategories": [
+        "Brake Pads",
+        "Brake Discs",
+        "Brake Calipers",
+        "Brake Lines",
+        "Brake Boosters"
+      ]
+    }
+  }
+}

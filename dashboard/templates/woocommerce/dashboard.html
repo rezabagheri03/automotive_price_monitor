@@ -1,0 +1,415 @@
+{% extends "base.html" %}
+
+{% block title %}داشبورد WooCommerce - {{ super() }}{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1><i class="fab fa-wordpress"></i> مدیریت WooCommerce</h1>
+    {% if current_user.is_admin %}
+    <div class="btn-group">
+        <button class="btn btn-success" onclick="updatePrices('avg')">
+            <i class="fas fa-sync"></i> به‌روزرسانی قیمت‌ها
+        </button>
+        <a href="{{ url_for('api.export_csv_api', price_type='woocommerce') }}" class="btn btn-primary">
+            <i class="fas fa-download"></i> دانلود CSV
+        </a>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Statistics Overview -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card bg-primary text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4>{{ import_stats.total_products_in_db|default(0)|number_format }}</h4>
+                        <p class="mb-0">کل محصولات در پایگاه داده</p>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-database fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3">
+        <div class="card bg-success text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4>{{ import_stats.products_mapped_to_wc|default(0)|number_format }}</h4>
+                        <p class="mb-0">متصل به WooCommerce</p>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fab fa-wordpress fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3">
+        <div class="card bg-info text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4>{{ import_stats.active_products|default(0)|number_format }}</h4>
+                        <p class="mb-0">محصولات فعال</p>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-check-circle fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3">
+        <div class="card bg-warning text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4>{{ import_stats.mapping_percentage|default(0)|round(1) }}%</h4>
+                        <p class="mb-0">درصد اتصال</p>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-percentage fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Action Cards -->
+<div class="row mb-4">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="fas fa-sync"></i> به‌روزرسانی قیمت‌ها</h5>
+            </div>
+            <div class="card-body">
+                <p class="card-text">به‌روزرسانی قیمت محصولات در WooCommerce براساس آخرین قیمت‌های اسکرپ شده</p>
+                
+                <form id="priceUpdateForm">
+                    <div class="mb-3">
+                        <label class="form-label">نوع قیمت:</label>
+                        <select class="form-select" name="price_type">
+                            <option value="avg">میانگین</option>
+                            <option value="min">کمترین</option>
+                            <option value="max">بیشترین</option>
+                        </select>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="dry_run" id="dryRun">
+                            <label class="form-check-label" for="dryRun">
+                                تست بدون اعمال تغییرات
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-success">
+                        <i class="fas fa-play"></i> شروع به‌روزرسانی
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="fas fa-upload"></i> ایمپورت CSV</h5>
+            </div>
+            <div class="card-body">
+                <p class="card-text">آپلود فایل CSV برای ایجاد یا به‌روزرسانی محصولات در WooCommerce</p>
+                
+                <form id="csvUploadForm" enctype="multipart/form-data">
+                    <div class="mb-3">
+                        <label class="form-label">فایل CSV:</label>
+                        <input type="file" class="form-control" name="csv_file" accept=".csv" required>
+                        <div class="form-text">فرمت مجاز: CSV با کدگذاری UTF-8</div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="update_existing" checked>
+                            <label class="form-check-label">به‌روزرسانی محصولات موجود</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="create_new" checked>
+                            <label class="form-check-label">ایجاد محصولات جدید</label>
+                        </div>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-upload"></i> آپلود و ایمپورت
+                    </button>
+                </form>
+                
+                <hr>
+                
+                <a href="/static/templates/sample_import.csv" class="btn btn-outline-info btn-sm">
+                    <i class="fas fa-download"></i> دانلود نمونه CSV
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Export Files -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="fas fa-file-export"></i> فایل‌های صادراتی</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="card border-primary">
+                            <div class="card-body text-center">
+                                <i class="fas fa-shopping-cart fa-3x text-primary mb-3"></i>
+                                <h6>فایل WooCommerce</h6>
+                                <p class="small text-muted">آماده برای ایمپورت به فروشگاه</p>
+                                <a href="{{ url_for('api.export_csv_api', price_type='woocommerce') }}" class="btn btn-primary">
+                                    <i class="fas fa-download"></i> دانلود
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-4">
+                        <div class="card border-info">
+                            <div class="card-body text-center">
+                                <i class="fas fa-balance-scale fa-3x text-info mb-3"></i>
+                                <h6>مقایسه قیمت‌ها</h6>
+                                <p class="small text-muted">مقایسه قیمت‌ها بین سایت‌ها</p>
+                                <a href="{{ url_for('api.export_csv_api', price_type='comparison') }}" class="btn btn-info">
+                                    <i class="fas fa-download"></i> دانلود
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-4">
+                        <div class="card border-success">
+                            <div class="card-body text-center">
+                                <i class="fas fa-warehouse fa-3x text-success mb-3"></i>
+                                <h6>گزارش موجودی</h6>
+                                <p class="small text-muted">وضعیت کلی محصولات</p>
+                                <a href="{{ url_for('api.export_csv_api', price_type='inventory') }}" class="btn btn-success">
+                                    <i class="fas fa-download"></i> دانلود
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Export Files -->
+{% if export_files %}
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="fas fa-history"></i> فایل‌های اخیر</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>نام فایل</th>
+                                <th>نوع</th>
+                                <th>اندازه</th>
+                                <th>تاریخ ایجاد</th>
+                                <th>عملیات</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for file in export_files %}
+                            <tr>
+                                <td>{{ file.filename }}</td>
+                                <td>
+                                    <span class="badge bg-secondary">{{ file.type }}</span>
+                                </td>
+                                <td>{{ file.size }}</td>
+                                <td>{{ file.created_at|datetime }}</td>
+                                <td>
+                                    <a href="{{ file.download_url }}" class="btn btn-sm btn-outline-primary">
+                                        <i class="fas fa-download"></i> دانلود
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Progress Modal -->
+<div class="modal fade" id="progressModal" tabindex="-1" data-bs-backdrop="static">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-spinner fa-spin"></i> <span id="progressTitle">در حال پردازش</span>
+                </h5>
+            </div>
+            <div class="modal-body">
+                <div class="progress mb-3">
+                    <div class="progress-bar progress-bar-striped progress-bar-animated" 
+                         role="progressbar" style="width: 0%"></div>
+                </div>
+                <p id="progressMessage">در حال آماده‌سازی...</p>
+                <div id="progressDetails" class="small text-muted"></div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Price update form handler
+document.getElementById('priceUpdateForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const formData = new FormData(e.target);
+    const data = {
+        price_type: formData.get('price_type'),
+        dry_run: formData.get('dry_run') === 'on'
+    };
+    
+    if (!confirm('آیا مطمئن هستید که می‌خواهید قیمت‌ها را به‌روزرسانی کنید؟')) {
+        return;
+    }
+    
+    showProgressModal('به‌روزرسانی قیمت‌ها', 'در حال آماده‌سازی قیمت‌ها...');
+    
+    fetch('{{ url_for("main.update_woocommerce_prices") }}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCSRFToken()
+        },
+        body: JSON.stringify(data)
+    })
+    .then(response => response.json())
+    .then(result => {
+        if (result.success) {
+            monitorPriceUpdate();
+        } else {
+            hideProgressModal();
+            showAlert('error', 'خطا: ' + result.error);
+        }
+    })
+    .catch(error => {
+        hideProgressModal();
+        showAlert('error', 'خطا در ارتباط با سرور');
+        console.error('Error:', error);
+    });
+});
+
+// CSV upload form handler
+document.getElementById('csvUploadForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const formData = new FormData(e.target);
+    
+    showProgressModal('آپلود CSV', 'در حال آپلود فایل...');
+    
+    fetch('/api/csv/upload', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(result => {
+        hideProgressModal();
+        if (result.success) {
+            showAlert('success', `آپلود موفق: ${result.imported} محصول وارد شد`);
+            setTimeout(() => location.reload(), 2000);
+        } else {
+            showAlert('error', 'خطا در آپلود: ' + result.error);
+        }
+    })
+    .catch(error => {
+        hideProgressModal();
+        showAlert('error', 'خطا در آپلود فایل');
+        console.error('Error:', error);
+    });
+});
+
+function showProgressModal(title, message) {
+    document.getElementById('progressTitle').textContent = title;
+    document.getElementById('progressMessage').textContent = message;
+    document.querySelector('.progress-bar').style.width = '0%';
+    document.getElementById('progressDetails').innerHTML = '';
+    
+    const modal = new bootstrap.Modal(document.getElementById('progressModal'));
+    modal.show();
+}
+
+function hideProgressModal() {
+    const modal = bootstrap.Modal.getInstance(document.getElementById('progressModal'));
+    if (modal) {
+        modal.hide();
+    }
+}
+
+function monitorPriceUpdate() {
+    let progress = 0;
+    const progressBar = document.querySelector('.progress-bar');
+    const messageEl = document.getElementById('progressMessage');
+    const detailsEl = document.getElementById('progressDetails');
+    
+    const interval = setInterval(() => {
+        // Simulate progress
+        progress += Math.random() * 15;
+        
+        if (progress <= 100) {
+            progressBar.style.width = progress + '%';
+            
+            if (progress < 30) {
+                messageEl.textContent = 'در حال محاسبه قیمت‌ها...';
+            } else if (progress < 60) {
+                messageEl.textContent = 'در حال به‌روزرسانی محصولات...';
+            } else if (progress < 90) {
+                messageEl.textContent = 'در حال تکمیل عملیات...';
+            } else {
+                progressBar.style.width = '100%';
+                progressBar.classList.remove('progress-bar-animated');
+                progressBar.classList.add('bg-success');
+                messageEl.textContent = 'به‌روزرسانی با موفقیت تکمیل شد!';
+                
+                clearInterval(interval);
+                
+                setTimeout(() => {
+                    hideProgressModal();
+                    showAlert('success', 'قیمت‌ها با موفقیت به‌روزرسانی شدند');
+                    location.reload();
+                }, 2000);
+            }
+        }
+    }, 1000);
+}
+
+function updatePrices(priceType) {
+    document.querySelector('select[name="price_type"]').value = priceType;
+    document.getElementById('priceUpdateForm').dispatchEvent(new Event('submit'));
+}
+</script>
+{% endblock %}

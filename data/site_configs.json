@@ -1,0 +1,265 @@
+{
+  "sites": [
+    {
+      "name": "auto-nik.com",
+      "base_url": "https://auto-nik.com",
+      "categories": ["ABS", "ECU", "Wiring", "Engine Electronics"],
+      "selectors": {
+        "product_list": ".product-item, .product-card",
+        "product_link": "a[href*='/product/'], .product-link",
+        "title": "h1, .product-title, .entry-title",
+        "price": ".price, .price-value, .woocommerce-Price-amount bdi",
+        "availability": ".availability, .in-stock, .stock-status",
+        "image": ".product-image img, .wp-post-image",
+        "description": ".product-description, .entry-content",
+        "pagination": ".pagination a, .page-numbers"
+      },
+      "request_settings": {
+        "delay": 2.0,
+        "concurrent": 5,
+        "timeout": 30,
+        "retries": 3
+      },
+      "search_patterns": {
+        "automotive_parts": "/search?q=automotive",
+        "engine_parts": "/category/engine",
+        "electrical": "/category/electrical"
+      }
+    },
+    {
+      "name": "bmwstor.com",
+      "base_url": "https://bmwstor.com",
+      "categories": ["BMW Parts", "BMW Accessories", "Engine Parts", "Body Parts"],
+      "selectors": {
+        "product_list": ".product, .woocommerce-product",
+        "product_link": "a.woocommerce-LoopProduct-link",
+        "title": "h1.product_title, .product-title",
+        "price": ".price .woocommerce-Price-amount bdi, .price-value",
+        "availability": ".stock, .availability",
+        "image": ".product-image img",
+        "description": ".woocommerce-product-details__short-description",
+        "pagination": ".woocommerce-pagination a"
+      },
+      "request_settings": {
+        "delay": 1.5,
+        "concurrent": 8,
+        "timeout": 30,
+        "retries": 3
+      },
+      "search_patterns": {
+        "bmw_parts": "/product-category/bmw-parts/",
+        "accessories": "/product-category/accessories/"
+      }
+    },
+    {
+      "name": "benzstor.com",
+      "base_url": "https://benzstor.com",
+      "categories": ["Mercedes Parts", "Benz Accessories", "Engine Components"],
+      "selectors": {
+        "product_list": ".product-item, .product",
+        "product_link": ".product-link, a[href*='/product/']",
+        "title": "h1, .product-name, .product-title",
+        "price": ".price-value, .product-price, .current-price",
+        "availability": ".availability-status, .stock-info",
+        "image": ".product-image img, .attachment-shop_catalog",
+        "description": ".product-description",
+        "pagination": ".pagination a, .page-link"
+      },
+      "request_settings": {
+        "delay": 2.0,
+        "concurrent": 6,
+        "timeout": 30,
+        "retries": 3
+      }
+    },
+    {
+      "name": "mryadaki.com", 
+      "base_url": "https://mryadaki.com",
+      "categories": ["General Auto Parts", "Engine Parts", "Transmission", "Electrical"],
+      "selectors": {
+        "product_list": ".product-grid-item, .product-item",
+        "product_link": ".product-link a, a[href*='/product/']",
+        "title": ".product-title, h1",
+        "price": ".price, .product-price-value, .current-price",
+        "availability": ".stock-info, .availability",
+        "image": ".product-image img",
+        "description": ".product-short-description",
+        "pagination": ".pagination a"
+      },
+      "request_settings": {
+        "delay": 1.8,
+        "concurrent": 10,
+        "timeout": 30,
+        "retries": 3
+      }
+    },
+    {
+      "name": "carinopart.com",
+      "base_url": "https://carinopart.com", 
+      "categories": ["Auto Components", "Engine Parts", "Electrical Parts"],
+      "selectors": {
+        "product_list": ".product-box, .product-item",
+        "product_link": ".product-link, a[href*='/product/']",
+        "title": ".product-name, h1.product-title",
+        "price": ".price-amount, .current-price, .price-value",
+        "availability": ".stock-status, .availability",
+        "image": ".product-img img",
+        "description": ".product-description",
+        "pagination": ".pagination-link"
+      },
+      "request_settings": {
+        "delay": 2.2,
+        "concurrent": 4,
+        "timeout": 30,
+        "retries": 3
+      }
+    },
+    {
+      "name": "japanstor.com",
+      "base_url": "https://japanstor.com",
+      "categories": ["Japanese Car Parts", "Honda Parts", "Toyota Parts", "Nissan Parts"],
+      "selectors": {
+        "product_list": ".product-card, .product-item", 
+        "product_link": ".product-link a",
+        "title": ".product-title, h1",
+        "price": ".price, .product-price, .sale-price",
+        "availability": ".in-stock, .available, .stock-status",
+        "image": ".product-thumbnail img",
+        "description": ".product-summary",
+        "pagination": ".page-numbers a"
+      },
+      "request_settings": {
+        "delay": 1.6,
+        "concurrent": 7,
+        "timeout": 30,
+        "retries": 3
+      }
+    },
+    {
+      "name": "shojapart.com",
+      "base_url": "https://shojapart.com",
+      "categories": ["Engine Parts", "Motor Parts", "Transmission Parts"],
+      "selectors": {
+        "product_list": ".product, .product-wrapper",
+        "product_link": "a.woocommerce-LoopProduct-link",
+        "title": "h1, .entry-title, .product-title",
+        "price": ".price-value, .wc-price, .amount",
+        "availability": ".availability, .stock-available",
+        "image": ".wp-post-image, .product-image img", 
+        "description": ".woocommerce-product-details__short-description",
+        "pagination": ".woocommerce-pagination a"
+      },
+      "request_settings": {
+        "delay": 2.4,
+        "concurrent": 5,
+        "timeout": 30,
+        "retries": 3
+      }
+    },
+    {
+      "name": "luxyadak.com",
+      "base_url": "https://luxyadak.com",
+      "categories": ["Luxury Car Parts", "Premium Accessories", "High-end Components"],
+      "selectors": {
+        "product_list": ".product-grid-item, .product-card",
+        "product_link": ".product-link a, a[href*='/product/']",
+        "title": ".product-title, h1",
+        "price": ".price, .amount, .price-current",
+        "availability": ".stock-available, .availability-text",
+        "image": ".product-image img",
+        "description": ".product-excerpt",
+        "pagination": ".pagination a"
+      },
+      "request_settings": {
+        "delay": 1.9,
+        "concurrent": 6,
+        "timeout": 30,
+        "retries": 3
+      }
+    },
+    {
+      "name": "parsianlent.com",
+      "base_url": "https://parsianlent.com", 
+      "categories": ["Brake Components", "Brake Pads", "Brake Discs"],
+      "selectors": {
+        "product_list": ".product, .brake-product",
+        "product_link": ".product-link, a[href*='/product/']",
+        "title": ".product-name, h1",
+        "price": ".price-current, .product-price, .price-value",
+        "availability": ".availability-text, .stock-info",
+        "image": ".product-photo img",
+        "description": ".product-info",
+        "pagination": ".pagination a"
+      },
+      "request_settings": {
+        "delay": 2.1,
+        "concurrent": 5,
+        "timeout": 30,
+        "retries": 3
+      }
+    },
+    {
+      "name": "iranrenu.com",
+      "base_url": "https://iranrenu.com",
+      "categories": ["Renault Parts", "Renault Accessories", "Engine Components"],
+      "selectors": {
+        "product_list": ".product, .renault-part",
+        "product_link": "a.product-permalink",
+        "title": ".product-title, h1",
+        "price": ".price, .sale-price, .regular-price",
+        "availability": ".stock-status, .availability",
+        "image": ".product-image img",
+        "description": ".product-short-description", 
+        "pagination": ".navigation a"
+      },
+      "request_settings": {
+        "delay": 1.7,
+        "concurrent": 8,
+        "timeout": 30,
+        "retries": 3
+      }
+    },
+    {
+      "name": "automoby.ir",
+      "base_url": "https://automoby.ir",
+      "categories": ["Auto Marketplace", "Various Auto Parts", "Accessories"],
+      "selectors": {
+        "product_list": ".listing-item, .product-card",
+        "product_link": ".item-link a, a[href*='/item/']",
+        "title": ".item-title, .listing-title", 
+        "price": ".price-value, .current-price, .item-price",
+        "availability": ".availability, .item-status",
+        "image": ".item-image img, .listing-image img",
+        "description": ".item-description",
+        "pagination": ".pagination-link"
+      },
+      "request_settings": {
+        "delay": 2.3,
+        "concurrent": 4,
+        "timeout": 30,
+        "retries": 3
+      }
+    },
+    {
+      "name": "oil-city.ir",
+      "base_url": "https://www.oil-city.ir",
+      "categories": ["Oils & Fluids", "Engine Oil", "Transmission Fluid", "Coolants"],
+      "selectors": {
+        "product_list": ".product, .oil-product",
+        "product_link": ".product-link a",
+        "title": ".product-name, h1, .oil-title",
+        "price": ".price, .product-price, .oil-price",
+        "availability": ".in-stock, .available, .stock-info",
+        "image": ".product-image img, .oil-image img",
+        "description": ".product-description",
+        "pagination": ".page-link"
+      },
+      "request_settings": {
+        "delay": 1.4,
+        "concurrent": 9,
+        "timeout": 30,
+        "retries": 3
+      }
+    }
+  ]
+}

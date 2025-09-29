@@ -1,0 +1,407 @@
+{% extends "base.html" %}
+
+{% block title %}تنظیمات سیستم - {{ super() }}{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1><i class="fas fa-cog"></i> تنظیمات سیستم</h1>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <ul class="nav nav-tabs card-header-tabs" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active" id="general-tab" data-bs-toggle="tab" data-bs-target="#general" type="button" role="tab">
+                            <i class="fas fa-cog"></i> عمومی
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="woocommerce-tab" data-bs-toggle="tab" data-bs-target="#woocommerce" type="button" role="tab">
+                            <i class="fab fa-wordpress"></i> WooCommerce
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="email-tab" data-bs-toggle="tab" data-bs-target="#email" type="button" role="tab">
+                            <i class="fas fa-envelope"></i> ایمیل
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="scraping-tab" data-bs-toggle="tab" data-bs-target="#scraping" type="button" role="tab">
+                            <i class="fas fa-spider"></i> اسکرپینگ
+                        </button>
+                    </li>
+                </ul>
+            </div>
+            
+            <form method="POST">
+                {{ form.hidden_tag() }}
+                <div class="card-body">
+                    <div class="tab-content">
+                        <!-- General Settings -->
+                        <div class="tab-pane fade show active" id="general" role="tabpanel">
+                            <h5 class="mb-3">تنظیمات عمومی</h5>
+                            
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    {{ form.price_display_type.label(class="form-label") }}
+                                    {{ form.price_display_type(class="form-select") }}
+                                    <div class="form-text">نوع قیمت پیش‌فرض برای نمایش</div>
+                                </div>
+                                <div class="col-md-6">
+                                    {{ form.products_per_page.label(class="form-label") }}
+                                    {{ form.products_per_page(class="form-select") }}
+                                    <div class="form-text">تعداد محصولات در هر صفحه</div>
+                                </div>
+                            </div>
+                            
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    {{ form.auto_refresh_interval.label(class="form-label") }}
+                                    {{ form.auto_refresh_interval(class="form-select") }}
+                                    <div class="form-text">بازه به‌روزرسانی خودکار داشبورد</div>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">گزینه‌های نمایش</label>
+                                    <div>
+                                        <div class="form-check">
+                                            {{ form.enable_notifications(class="form-check-input") }}
+                                            {{ form.enable_notifications.label(class="form-check-label") }}
+                                        </div>
+                                        <div class="form-check">
+                                            {{ form.show_price_trends(class="form-check-input") }}
+                                            {{ form.show_price_trends.label(class="form-check-label") }}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- WooCommerce Settings -->
+                        <div class="tab-pane fade" id="woocommerce" role="tabpanel">
+                            <h5 class="mb-3">تنظیمات WooCommerce</h5>
+                            
+                            <div class="mb-3">
+                                {{ form.woocommerce_url.label(class="form-label") }}
+                                {{ form.woocommerce_url(class="form-control") }}
+                                <div class="form-text">آدرس کامل فروشگاه شما (مثال: https://mystore.com)</div>
+                            </div>
+                            
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    {{ form.woocommerce_consumer_key.label(class="form-label") }}
+                                    {{ form.woocommerce_consumer_key(class="form-control") }}
+                                    <div class="form-text">کلید مصرف‌کننده API</div>
+                                </div>
+                                <div class="col-md-6">
+                                    {{ form.woocommerce_consumer_secret.label(class="form-label") }}
+                                    {{ form.woocommerce_consumer_secret(class="form-control") }}
+                                    <div class="form-text">رمز مخفی API</div>
+                                </div>
+                            </div>
+                            
+                            <div class="alert alert-info">
+                                <i class="fas fa-info-circle"></i>
+                                <strong>راهنما:</strong> برای تولید کلیدهای API، به WooCommerce → Settings → Advanced → REST API مراجعه کنید.
+                            </div>
+                            
+                            <button type="button" class="btn btn-outline-primary" onclick="testWooCommerceConnection()">
+                                <i class="fas fa-plug"></i> تست اتصال
+                            </button>
+                        </div>
+                        
+                        <!-- Email Settings -->
+                        <div class="tab-pane fade" id="email" role="tabpanel">
+                            <h5 class="mb-3">تنظیمات ایمیل</h5>
+                            
+                            <div class="row mb-3">
+                                <div class="col-md-8">
+                                    {{ form.email_host.label(class="form-label") }}
+                                    {{ form.email_host(class="form-control") }}
+                                    <div class="form-text">سرور SMTP (مثال: smtp.gmail.com)</div>
+                                </div>
+                                <div class="col-md-4">
+                                    {{ form.email_port.label(class="form-label") }}
+                                    {{ form.email_port(class="form-control") }}
+                                    <div class="form-text">پورت SMTP (معمولاً 587)</div>
+                                </div>
+                            </div>
+                            
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    {{ form.email_user.label(class="form-label") }}
+                                    {{ form.email_user(class="form-control") }}
+                                    <div class="form-text">نام کاربری یا ایمیل فرستنده</div>
+                                </div>
+                                <div class="col-md-6">
+                                    {{ form.email_password.label(class="form-label") }}
+                                    {{ form.email_password(class="form-control") }}
+                                    <div class="form-text">رمز عبور یا App Password</div>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                {{ form.email_to.label(class="form-label") }}
+                                {{ form.email_to(class="form-control") }}
+                                <div class="form-text">ایمیل دریافت کننده اعلانات سیستم</div>
+                            </div>
+                            
+                            <div class="alert alert-warning">
+                                <i class="fas fa-exclamation-triangle"></i>
+                                <strong>نکته امنیتی:</strong> برای Gmail از App Password استفاده کنید، نه رمز اصلی حساب.
+                            </div>
+                            
+                            <button type="button" class="btn btn-outline-primary" onclick="testEmailConfiguration()">
+                                <i class="fas fa-envelope"></i> ارسال ایمیل تست
+                            </button>
+                        </div>
+                        
+                        <!-- Scraping Settings -->
+                        <div class="tab-pane fade" id="scraping" role="tabpanel">
+                            <h5 class="mb-3">تنظیمات اسکرپینگ</h5>
+                            
+                            <div class="alert alert-info">
+                                <i class="fas fa-info-circle"></i>
+                                تنظیمات اسکرپینگ در فایل کانفیگ اصلی قابل تغییر است. این بخش فقط برای نمایش وضعیت فعلی است.
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <h6>وضعیت فعلی:</h6>
+                                    <ul class="list-group list-group-flush">
+                                        <li class="list-group-item d-flex justify-content-between">
+                                            <span>درخواست‌های همزمان:</span>
+                                            <span id="concurrentRequests">-</span>
+                                        </li>
+                                        <li class="list-group-item d-flex justify-content-between">
+                                            <span>تأخیر بین درخواست‌ها:</span>
+                                            <span id="downloadDelay">-</span>
+                                        </li>
+                                        <li class="list-group-item d-flex justify-content-between">
+                                            <span>چرخش User-Agent:</span>
+                                            <span id="userAgentRotation">-</span>
+                                        </li>
+                                        <li class="list-group-item d-flex justify-content-between">
+                                            <span>وضعیت پروکسی:</span>
+                                            <span id="proxyStatus">-</span>
+                                        </li>
+                                    </ul>
+                                </div>
+                                <div class="col-md-6">
+                                    <h6>آمار عملکرد:</h6>
+                                    <ul class="list-group list-group-flush">
+                                        <li class="list-group-item d-flex justify-content-between">
+                                            <span>موفقیت (7 روز):</span>
+                                            <span id="successRate">-</span>
+                                        </li>
+                                        <li class="list-group-item d-flex justify-content-between">
+                                            <span>میانگین زمان:</span>
+                                            <span id="avgDuration">-</span>
+                                        </li>
+                                        <li class="list-group-item d-flex justify-content-between">
+                                            <span>سایت‌های فعال:</span>
+                                            <span id="activeSites">-</span>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card-footer">
+                    <div class="d-flex justify-content-end">
+                        <button type="submit" class="btn btn-success">
+                            <i class="fas fa-save"></i> ذخیره تنظیمات
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h6><i class="fas fa-info-circle"></i> وضعیت سیستم</h6>
+            </div>
+            <div class="card-body">
+                <div id="systemStatus">
+                    <div class="d-flex align-items-center mb-2">
+                        <div class="status-indicator" id="dbStatus"></div>
+                        <span>پایگاه داده</span>
+                    </div>
+                    <div class="d-flex align-items-center mb-2">
+                        <div class="status-indicator" id="woocommerceStatus"></div>
+                        <span>WooCommerce</span>
+                    </div>
+                    <div class="d-flex align-items-center mb-2">
+                        <div class="status-indicator" id="emailStatus"></div>
+                        <span>ایمیل</span>
+                    </div>
+                    <div class="d-flex align-items-center">
+                        <div class="status-indicator" id="redisStatus"></div>
+                        <span>Redis Cache</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card mt-3">
+            <div class="card-header">
+                <h6><i class="fas fa-tools"></i> ابزارهای سیستم</h6>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <button class="btn btn-outline-primary" onclick="clearCache()">
+                        <i class="fas fa-broom"></i> پاک‌سازی کش
+                    </button>
+                    <button class="btn btn-outline-info" onclick="refreshSystemStatus()">
+                        <i class="fas fa-sync"></i> بررسی مجدد وضعیت
+                    </button>
+                    <a href="{{ url_for('main.health_check') }}" class="btn btn-outline-warning">
+                        <i class="fas fa-heartbeat"></i> چک سلامت سیستم
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    loadSystemStatus();
+    loadScrapingStats();
+});
+
+function loadSystemStatus() {
+    fetch('/api/system/status')
+    .then(response => response.json())
+    .then(data => {
+        updateStatusIndicator('dbStatus', data.database_connected);
+        updateStatusIndicator('woocommerceStatus', data.woocommerce_connected);
+        updateStatusIndicator('emailStatus', data.email_configured);
+        updateStatusIndicator('redisStatus', data.redis_connected);
+    })
+    .catch(error => {
+        console.error('Status check error:', error);
+    });
+}
+
+function updateStatusIndicator(elementId, status) {
+    const element = document.getElementById(elementId);
+    element.className = `status-indicator ${status ? 'status-online' : 'status-offline'}`;
+}
+
+function testWooCommerceConnection() {
+    showLoading('در حال تست اتصال WooCommerce...');
+    
+    fetch('/api/woocommerce/test', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCSRFToken()
+        },
+        body: JSON.stringify({
+            url: document.querySelector('[name="woocommerce_url"]').value,
+            consumer_key: document.querySelector('[name="woocommerce_consumer_key"]').value,
+            consumer_secret: document.querySelector('[name="woocommerce_consumer_secret"]').value
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        hideLoading();
+        if (data.success) {
+            showAlert('success', 'اتصال WooCommerce موفقیت‌آمیز بود');
+            updateStatusIndicator('woocommerceStatus', true);
+        } else {
+            showAlert('error', 'خطا در اتصال WooCommerce: ' + data.error);
+        }
+    })
+    .catch(error => {
+        hideLoading();
+        showAlert('error', 'خطا در تست اتصال');
+    });
+}
+
+function testEmailConfiguration() {
+    showLoading('در حال ارسال ایمیل تست...');
+    
+    fetch('/api/email/test', {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': getCSRFToken()
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        hideLoading();
+        if (data.success) {
+            showAlert('success', 'ایمیل تست با موفقیت ارسال شد');
+            updateStatusIndicator('emailStatus', true);
+        } else {
+            showAlert('error', 'خطا در ارسال ایمیل: ' + data.error);
+        }
+    })
+    .catch(error => {
+        hideLoading();
+        showAlert('error', 'خطا در تست ایمیل');
+    });
+}
+
+function loadScrapingStats() {
+    fetch('/api/scraping/config')
+    .then(response => response.json())
+    .then(data => {
+        document.getElementById('concurrentRequests').textContent = data.concurrent_requests || '-';
+        document.getElementById('downloadDelay').textContent = (data.download_delay || 0) + ' ثانیه';
+        document.getElementById('userAgentRotation').textContent = data.user_agent_rotation ? 'فعال' : 'غیرفعال';
+        document.getElementById('proxyStatus').textContent = data.proxy_enabled ? 'فعال' : 'غیرفعال';
+        
+        if (data.performance) {
+            document.getElementById('successRate').textContent = (data.performance.success_rate || 0) + '%';
+            document.getElementById('avgDuration').textContent = (data.performance.avg_duration || 0) + ' ثانیه';
+            document.getElementById('activeSites').textContent = data.performance.active_sites || 0;
+        }
+    })
+    .catch(error => {
+        console.error('Scraping stats error:', error);
+    });
+}
+
+function clearCache() {
+    if (confirm('آیا مطمئن هستید که می‌خواهید کش را پاک کنید؟')) {
+        showLoading('در حال پاک‌سازی کش...');
+        
+        fetch('/api/cache/clear', {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': getCSRFToken()
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            hideLoading();
+            if (data.success) {
+                showAlert('success', 'کش با موفقیت پاک شد');
+            } else {
+                showAlert('error', 'خطا در پاک‌سازی کش');
+            }
+        })
+        .catch(error => {
+            hideLoading();
+            showAlert('error', 'خطا در عملیات');
+        });
+    }
+}
+
+function refreshSystemStatus() {
+    loadSystemStatus();
+    loadScrapingStats();
+    showAlert('info', 'وضعیت سیستم به‌روزرسانی شد');
+}
+</script>
+{% endblock %}

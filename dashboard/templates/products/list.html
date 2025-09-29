@@ -1,0 +1,150 @@
+{% extends "base.html" %}
+
+{% block title %}محصولات - {{ super() }}{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1><i class="fas fa-box"></i> مدیریت محصولات</h1>
+    {% if current_user.is_admin %}
+    <a href="{{ url_for('main.add_product') }}" class="btn btn-primary">
+        <i class="fas fa-plus"></i> افزودن محصول
+    </a>
+    {% endif %}
+</div>
+
+<!-- Filters -->
+<div class="card mb-4">
+    <div class="card-body">
+        <form id="filterForm" method="GET">
+            <div class="row">
+                <div class="col-md-3">
+                    {{ form.search.label(class="form-label") }}
+                    {{ form.search(class="form-control") }}
+                </div>
+                <div class="col-md-2">
+                    {{ form.category.label(class="form-label") }}
+                    {{ form.category(class="form-select") }}
+                </div>
+                <div class="col-md-2">
+                    {{ form.status.label(class="form-label") }}
+                    {{ form.status(class="form-select") }}
+                </div>
+                <div class="col-md-2">
+                    {{ form.sort_by.label(class="form-label") }}
+                    {{ form.sort_by(class="form-select") }}
+                </div>
+                <div class="col-md-2">
+                    {{ form.sort_order.label(class="form-label") }}
+                    {{ form.sort_order(class="form-select") }}
+                </div>
+                <div class="col-md-1 d-flex align-items-end">
+                    <button type="submit" class="btn btn-outline-primary w-100">
+                        <i class="fas fa-search"></i>
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Products Table -->
+<div class="card">
+    <div class="card-header">
+        <h5>لیست محصولات ({{ pagination.total }} محصول)</h5>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>نام محصول</th>
+                        <th>دسته بندی</th>
+                        <th>قیمت میانگین</th>
+                        <th>وضعیت</th>
+                        <th>آخرین به‌روزرسانی</th>
+                        {% if current_user.is_admin %}<th>عملیات</th>{% endif %}
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for product in products %}
+                    <tr data-product-id="{{ product.id }}">
+                        <td>
+                            <a href="{{ url_for('main.product_detail', product_id=product.id) }}" class="text-decoration-none">
+                                <strong>{{ product.name }}</strong>
+                            </a>
+                            {% if product.sku %}
+                            <br><small class="text-muted">SKU: {{ product.sku }}</small>
+                            {% endif %}
+                        </td>
+                        <td>{{ product.category }}</td>
+                        <td>
+                            {% if product.current_avg_price %}
+                                <span class="price-display">{{ product.current_avg_price|currency }}</span>
+                            {% else %}
+                                <span class="text-muted">بدون قیمت</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <span class="badge bg-{{ 'success' if product.is_active else 'secondary' }}">
+                                {{ 'فعال' if product.is_active else 'غیرفعال' }}
+                            </span>
+                            {% if product.is_monitored %}
+                            <span class="badge bg-info">تحت نظارت</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ product.updated_at|datetime if product.updated_at else '-' }}</td>
+                        {% if current_user.is_admin %}
+                        <td>
+                            <div class="btn-group btn-group-sm">
+                                <a href="{{ url_for('main.edit_product', product_id=product.id) }}" 
+                                   class="btn btn-outline-primary">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                <button onclick="deleteProduct({{ product.id }}, '{{ product.name }}')" 
+                                        class="btn btn-outline-danger">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </td>
+                        {% endif %}
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- Pagination -->
+        {% if pagination.pages > 1 %}
+        <nav aria-label="صفحه بندی محصولات">
+            <ul class="pagination justify-content-center">
+                {% if pagination.has_prev %}
+                <li class="page-item">
+                    <a class="page-link" href="{{ url_for('main.products', page=pagination.prev_num, **request.args) }}">قبلی</a>
+                </li>
+                {% endif %}
+                
+                {% for page_num in pagination.iter_pages() %}
+                    {% if page_num %}
+                        {% if page_num != pagination.page %}
+                        <li class="page-item">
+                            <a class="page-link" href="{{ url_for('main.products', page=page_num, **request.args) }}">{{ page_num }}</a>
+                        </li>
+                        {% else %}
+                        <li class="page-item active">
+                            <span class="page-link">{{ page_num }}</span>
+                        </li>
+                        {% endif %}
+                    {% endif %}
+                {% endfor %}
+                
+                {% if pagination.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="{{ url_for('main.products', page=pagination.next_num, **request.args) }}">بعدی</a>
+                </li>
+                {% endif %}
+            </ul>
+        </nav>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,371 @@
+{% extends "base.html" %}
+
+{% block title %}مدیریت کاربران - {{ super() }}{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1><i class="fas fa-users"></i> مدیریت کاربران</h1>
+    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addUserModal">
+        <i class="fas fa-plus"></i> افزودن کاربر
+    </button>
+</div>
+
+<!-- Users Table -->
+<div class="card">
+    <div class="card-header">
+        <h5>لیست کاربران ({{ users|length }} کاربر)</h5>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>نام کاربری</th>
+                        <th>نام و نام خانوادگی</th>
+                        <th>ایمیل</th>
+                        <th>نقش</th>
+                        <th>وضعیت</th>
+                        <th>آخرین ورود</th>
+                        <th>عملیات</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for user in users %}
+                    <tr>
+                        <td>
+                            <strong>{{ user.username }}</strong>
+                            {% if user.id == current_user.id %}
+                            <span class="badge bg-info">شما</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ user.first_name or '' }} {{ user.last_name or '' }}</td>
+                        <td>{{ user.email }}</td>
+                        <td>
+                            <span class="badge bg-{{ 'danger' if user.role == 'admin' else 'primary' if user.role == 'user' else 'secondary' }}">
+                                {{ 'مدیر' if user.role == 'admin' else 'کاربر' if user.role == 'user' else 'مشاهده‌گر' }}
+                            </span>
+                        </td>
+                        <td>
+                            <span class="badge bg-{{ 'success' if user.is_active else 'secondary' }}">
+                                {{ 'فعال' if user.is_active else 'غیرفعال' }}
+                            </span>
+                        </td>
+                        <td>
+                            {% if user.last_login %}
+                                {{ user.last_login|datetime }}
+                            {% else %}
+                                <span class="text-muted">هرگز</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <div class="btn-group btn-group-sm">
+                                <button class="btn btn-outline-primary" onclick="editUser({{ user.id }})">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                {% if user.id != current_user.id %}
+                                <button class="btn btn-outline-warning" onclick="toggleUserStatus({{ user.id }}, {{ 'false' if user.is_active else 'true' }})">
+                                    <i class="fas fa-{{ 'ban' if user.is_active else 'check' }}"></i>
+                                </button>
+                                <button class="btn btn-outline-danger" onclick="deleteUser({{ user.id }}, '{{ user.username }}')">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Add User Modal -->
+<div class="modal fade" id="addUserModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-user-plus"></i> افزودن کاربر جدید
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="addUserForm">
+                <div class="modal-body">
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label">نام کاربری*</label>
+                            <input type="text" class="form-control" name="username" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">ایمیل*</label>
+                            <input type="email" class="form-control" name="email" required>
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label">نام</label>
+                            <input type="text" class="form-control" name="first_name">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">نام خانوادگی</label>
+                            <input type="text" class="form-control" name="last_name">
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label">رمز عبور*</label>
+                            <input type="password" class="form-control" name="password" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">نقش</label>
+                            <select class="form-select" name="role">
+                                <option value="user">کاربر</option>
+                                <option value="admin">مدیر</option>
+                                <option value="viewer">مشاهده‌گر</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" name="is_active" checked>
+                        <label class="form-check-label">کاربر فعال باشد</label>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">انصراف</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-plus"></i> افزودن کاربر
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Edit User Modal -->
+<div class="modal fade" id="editUserModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-user-edit"></i> ویرایش کاربر
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="editUserForm">
+                <input type="hidden" name="user_id" id="editUserId">
+                <div class="modal-body">
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label">نام کاربری*</label>
+                            <input type="text" class="form-control" name="username" id="editUsername" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">ایمیل*</label>
+                            <input type="email" class="form-control" name="email" id="editEmail" required>
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label">نام</label>
+                            <input type="text" class="form-control" name="first_name" id="editFirstName">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">نام خانوادگی</label>
+                            <input type="text" class="form-control" name="last_name" id="editLastName">
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label">رمز عبور جدید</label>
+                            <input type="password" class="form-control" name="new_password">
+                            <div class="form-text">خالی بگذارید تا تغییر نکند</div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">نقش</label>
+                            <select class="form-select" name="role" id="editRole">
+                                <option value="user">کاربر</option>
+                                <option value="admin">مدیر</option>
+                                <option value="viewer">مشاهده‌گر</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" name="is_active" id="editIsActive">
+                        <label class="form-check-label">کاربر فعال</label>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">انصراف</button>
+                    <button type="submit" class="btn btn-success">
+                        <i class="fas fa-save"></i> ذخیره تغییرات
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Add user form handler
+document.getElementById('addUserForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const formData = new FormData(e.target);
+    const data = {
+        username: formData.get('username'),
+        email: formData.get('email'),
+        first_name: formData.get('first_name'),
+        last_name: formData.get('last_name'),
+        password: formData.get('password'),
+        role: formData.get('role'),
+        is_active: formData.get('is_active') === 'on'
+    };
+    
+    fetch('/api/users', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCSRFToken()
+        },
+        body: JSON.stringify(data)
+    })
+    .then(response => response.json())
+    .then(result => {
+        if (result.success) {
+            showAlert('success', 'کاربر با موفقیت اضافه شد');
+            setTimeout(() => location.reload(), 1500);
+        } else {
+            showAlert('error', 'خطا: ' + result.error);
+        }
+    })
+    .catch(error => {
+        showAlert('error', 'خطا در ایجاد کاربر');
+        console.error('Error:', error);
+    });
+});
+
+// Edit user form handler
+document.getElementById('editUserForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const formData = new FormData(e.target);
+    const userId = formData.get('user_id');
+    const data = {
+        username: formData.get('username'),
+        email: formData.get('email'),
+        first_name: formData.get('first_name'),
+        last_name: formData.get('last_name'),
+        role: formData.get('role'),
+        is_active: formData.get('is_active') === 'on'
+    };
+    
+    if (formData.get('new_password')) {
+        data.new_password = formData.get('new_password');
+    }
+    
+    fetch(`/api/users/${userId}`, {
+        method: 'PUT',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCSRFToken()
+        },
+        body: JSON.stringify(data)
+    })
+    .then(response => response.json())
+    .then(result => {
+        if (result.success) {
+            showAlert('success', 'کاربر با موفقیت به‌روزرسانی شد');
+            setTimeout(() => location.reload(), 1500);
+        } else {
+            showAlert('error', 'خطا: ' + result.error);
+        }
+    })
+    .catch(error => {
+        showAlert('error', 'خطا در ویرایش کاربر');
+        console.error('Error:', error);
+    });
+});
+
+function editUser(userId) {
+    fetch(`/api/users/${userId}`)
+    .then(response => response.json())
+    .then(user => {
+        document.getElementById('editUserId').value = user.id;
+        document.getElementById('editUsername').value = user.username;
+        document.getElementById('editEmail').value = user.email;
+        document.getElementById('editFirstName').value = user.first_name || '';
+        document.getElementById('editLastName').value = user.last_name || '';
+        document.getElementById('editRole').value = user.role;
+        document.getElementById('editIsActive').checked = user.is_active;
+        
+        const modal = new bootstrap.Modal(document.getElementById('editUserModal'));
+        modal.show();
+    })
+    .catch(error => {
+        showAlert('error', 'خطا در بارگذاری اطلاعات کاربر');
+        console.error('Error:', error);
+    });
+}
+
+function toggleUserStatus(userId, newStatus) {
+    const statusText = newStatus === 'true' ? 'فعال' : 'غیرفعال';
+    
+    if (confirm(`آیا مطمئن هستید که می‌خواهید این کاربر را ${statusText} کنید؟`)) {
+        fetch(`/api/users/${userId}/toggle-status`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCSRFToken()
+            },
+            body: JSON.stringify({ is_active: newStatus === 'true' })
+        })
+        .then(response => response.json())
+        .then(result => {
+            if (result.success) {
+                showAlert('success', `وضعیت کاربر به ${statusText} تغییر یافت`);
+                setTimeout(() => location.reload(), 1500);
+            } else {
+                showAlert('error', 'خطا در تغییر وضعیت کاربر');
+            }
+        })
+        .catch(error => {
+            showAlert('error', 'خطا در عملیات');
+            console.error('Error:', error);
+        });
+    }
+}
+
+function deleteUser(userId, username) {
+    if (confirm(`آیا مطمئن هستید که می‌خواهید کاربر "${username}" را حذف کنید؟\n\nاین عمل غیرقابل بازگشت است!`)) {
+        fetch(`/api/users/${userId}`, {
+            method: 'DELETE',
+            headers: {
+                'X-CSRFToken': getCSRFToken()
+            }
+        })
+        .then(response => response.json())
+        .then(result => {
+            if (result.success) {
+                showAlert('success', 'کاربر با موفقیت حذف شد');
+                setTimeout(() => location.reload(), 1500);
+            } else {
+                showAlert('error', 'خطا در حذف کاربر');
+            }
+        })
+        .catch(error => {
+            showAlert('error', 'خطا در حذف کاربر');
+            console.error('Error:', error);
+        });
+    }
+}
+</script>
+{% endblock %}

@@ -1,0 +1,195 @@
+{% extends "base.html" %}
+
+{% block title %}داشبورد اسکرپینگ - {{ super() }}{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1><i class="fas fa-spider"></i> داشبورد اسکرپینگ</h1>
+    {% if current_user.is_admin %}
+    <a href="{{ url_for('main.manual_scraping') }}" class="btn btn-primary">
+        <i class="fas fa-play"></i> شروع اسکرپینگ دستی
+    </a>
+    {% endif %}
+</div>
+
+<!-- Site Status Overview -->
+<div class="row mb-4">
+    {% for site in sites %}
+    <div class="col-md-4 col-lg-3 mb-3">
+        <div class="card">
+            <div class="card-body text-center">
+                <div class="status-indicator {{ 'status-online' if site.is_active and site.is_available else 'status-offline' }} mb-2"></div>
+                <h6>{{ site.site_name }}</h6>
+                <p class="small text-muted mb-1">
+                    تأخیر: {{ site.request_delay }}s | 
+                    همزمان: {{ site.concurrent_requests }}
+                </p>
+                <p class="small">
+                    {% if site.last_successful_scrape %}
+                        آخرین موفقیت: {{ site.last_successful_scrape|datetime }}
+                    {% else %}
+                        آخرین موفقیت: هرگز
+                    {% endif %}
+                </p>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<!-- Performance Statistics -->
+<div class="row mb-4">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="fas fa-chart-line"></i> عملکرد اسکرپینگ (7 روز اخیر)</h5>
+            </div>
+            <div class="card-body">
+                {% if performance and not performance.no_data %}
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6>آمار کلی:</h6>
+                        <ul class="list-group list-group-flush">
+                            <li class="list-group-item d-flex justify-content-between">
+                                <span>کل اجراها:</span>
+                                <span class="badge bg-primary">{{ performance.total_runs_7d }}</span>
+                            </li>
+                            <li class="list-group-item d-flex justify-content-between">
+                                <span>نرخ موفقیت:</span>
+                                <span class="badge bg-{{ 'success' if performance.success_rate_7d > 90 else 'warning' if performance.success_rate_7d > 70 else 'danger' }}">
+                                    {{ performance.success_rate_7d|round(1) }}%
+                                </span>
+                            </li>
+                            <li class="list-group-item d-flex justify-content-between">
+                                <span>میانگین زمان:</span>
+                                <span>{{ performance.avg_duration_seconds|round(1) }} ثانیه</span>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6">
+                        <h6>محصولات:</h6>
+                        <ul class="list-group list-group-flush">
+                            <li class="list-group-item d-flex justify-content-between">
+                                <span>کل محصولات:</span>
+                                <span>{{ performance.total_products_scraped_7d|number_format }}</span>
+                            </li>
+                            <li class="list-group-item d-flex justify-content-between">
+                                <span>میانگین در اجرا:</span>
+                                <span>{{ performance.avg_products_per_run|round(0)|int }}</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+                {% else %}
+                <p class="text-muted">هنوز اطلاعات عملکردی ثبت نشده است</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="fas fa-cogs"></i> عملیات سریع</h5>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    {% if current_user.is_admin %}
+                    <button class="btn btn-success btn-start-scraping">
+                        <i class="fas fa-play"></i> شروع همه سایت‌ها
+                    </button>
+                    <button class="btn btn-info" onclick="checkAllSites()">
+                        <i class="fas fa-check-circle"></i> بررسی وضعیت
+                    </button>
+                    <button class="btn btn-warning" onclick="refreshStats()">
+                        <i class="fas fa-sync"></i> به‌روزرسانی آمار
+                    </button>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Scraping Logs -->
+<div class="card">
+    <div class="card-header">
+        <h5><i class="fas fa-history"></i> لاگ‌های اخیر</h5>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>زمان شروع</th>
+                        <th>سایت</th>
+                        <th>وضعیت</th>
+                        <th>محصولات یافته</th>
+                        <th>محصولات اسکرپ شده</th>
+                        <th>مدت زمان</th>
+                        <th>خطاها</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for log in recent_logs %}
+                    <tr>
+                        <td>{{ log.start_time|datetime }}</td>
+                        <td>{{ log.site_name }}</td>
+                        <td>
+                            <span class="badge bg-{{ log.status|status_badge }}">
+                                {{ log.status }}
+                            </span>
+                        </td>
+                        <td>{{ log.products_found or 0 }}</td>
+                        <td>{{ log.products_scraped or 0 }}</td>
+                        <td>
+                            {% if log.duration_seconds %}
+                                {{ log.duration_seconds }} ثانیه
+                            {% else %}
+                                -
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if log.errors_count > 0 %}
+                                <span class="badge bg-danger">{{ log.errors_count }}</span>
+                            {% else %}
+                                <span class="text-muted">-</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function checkAllSites() {
+    showLoading('در حال بررسی وضعیت سایت‌ها...');
+    
+    fetch('/api/sites/check-all', {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': getCSRFToken()
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        hideLoading();
+        showAlert('info', `بررسی تکمیل شد: ${data.available} سایت در دسترس`);
+        setTimeout(() => location.reload(), 2000);
+    })
+    .catch(error => {
+        hideLoading();
+        showAlert('error', 'خطا در بررسی وضعیت سایت‌ها');
+    });
+}
+
+function refreshStats() {
+    location.reload();
+}
+</script>
+{% endblock %}

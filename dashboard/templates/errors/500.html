@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+
+{% block title %}خطای سرور - {{ super() }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row justify-content-center">
+        <div class="col-md-6 text-center">
+            <div class="error-page">
+                <h1 class="display-1 text-danger">500</h1>
+                <h2 class="mb-4">خطای داخلی سرور</h2>
+                <p class="lead text-muted mb-4">
+                    متأسفانه مشکلی در سرور رخ داده است. لطفاً چند لحظه بعد مجدداً تلاش کنید.
+                </p>
+                
+                <div class="mb-4">
+                    <i class="fas fa-server fa-5x text-muted opacity-25"></i>
+                </div>
+                
+                <div class="alert alert-warning">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <strong>اطلاع:</strong> اگر این خطا تکرار شود، لطفاً با پشتیبانی تماس بگیرید.
+                </div>
+                
+                <div class="d-grid gap-2 d-md-flex justify-content-md-center">
+                    <button onclick="location.reload()" class="btn btn-primary me-md-2">
+                        <i class="fas fa-sync"></i> تلاش مجدد
+                    </button>
+                    <a href="{{ url_for('main.dashboard') }}" class="btn btn-outline-secondary">
+                        <i class="fas fa-home"></i> بازگشت به داشبورد
+                    </a>
+                </div>
+                
+                <hr class="my-4">
+                
+                <details class="text-start">
+                    <summary class="btn btn-outline-info">جزئیات فنی</summary>
+                    <div class="mt-3 p-3 bg-light rounded">
+                        <p><strong>زمان خطا:</strong> {{ moment().format('YYYY-MM-DD HH:mm:ss') }}</p>
+                        <p><strong>نوع خطا:</strong> Internal Server Error</p>
+                        <p><strong>کد خطا:</strong> 500</p>
+                        <p><strong>URL:</strong> {{ request.url }}</p>
+                        <p><strong>User-Agent:</strong> <small>{{ request.headers.get('User-Agent', 'Unknown') }}</small></p>
+                    </div>
+                </details>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.error-page {
+    padding: 4rem 0;
+}
+.error-page h1 {
+    font-size: 8rem;
+    font-weight: bold;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+}
+</style>
+{% endblock %}

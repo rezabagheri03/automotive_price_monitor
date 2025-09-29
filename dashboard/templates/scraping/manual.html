@@ -1,0 +1,256 @@
+{% extends "base.html" %}
+
+{% block title %}اسکرپینگ دستی - {{ super() }}{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1><i class="fas fa-play"></i> اسکرپینگ دستی</h1>
+    <a href="{{ url_for('main.scraping_dashboard') }}" class="btn btn-outline-secondary">
+        <i class="fas fa-arrow-right"></i> بازگشت به داشبورد
+    </a>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="fas fa-cog"></i> تنظیمات اسکرپینگ</h5>
+            </div>
+            <div class="card-body">
+                <form id="manualScrapingForm" method="POST">
+                    {{ form.hidden_tag() }}
+                    
+                    <div class="mb-3">
+                        {{ form.sites.label(class="form-label") }}
+                        {{ form.sites(class="form-select") }}
+                        <div class="form-text">انتخاب کنید کدام سایت‌ها اسکرپ شوند</div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <div class="form-check">
+                            {{ form.test_mode(class="form-check-input") }}
+                            {{ form.test_mode.label(class="form-check-label") }}
+                            <div class="form-text">در حالت تست، تعداد محدودی محصول اسکرپ می‌شود</div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <div class="form-check">
+                            {{ form.send_notifications(class="form-check-input") }}
+                            {{ form.send_notifications.label(class="form-check-label") }}
+                            <div class="form-text">ارسال اعلان ایمیل پس از اتمام اسکرپینگ</div>
+                        </div>
+                    </div>
+                    
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <button type="button" class="btn btn-outline-secondary me-md-2" onclick="history.back()">
+                            <i class="fas fa-times"></i> انصراف
+                        </button>
+                        <button type="submit" class="btn btn-success" id="startScrapingBtn">
+                            <i class="fas fa-play"></i> شروع اسکرپینگ
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h6><i class="fas fa-info-circle"></i> توضیحات</h6>
+            </div>
+            <div class="card-body">
+                <h6>راهنمای اسکرپینگ دستی:</h6>
+                <ul class="small text-muted">
+                    <li>انتخاب "همه سایت‌ها" برای اسکرپ کامل</li>
+                    <li>حالت تست برای آزمایش سیستم</li>
+                    <li>فرآیند ممکن است چند دقیقه طول بکشد</li>
+                    <li>نتایج در داشبورد اسکرپینگ نمایش داده می‌شود</li>
+                </ul>
+                
+                <hr>
+                
+                <h6>آخرین اجرا:</h6>
+                <div id="lastRunInfo" class="small text-muted">
+                    در حال بارگذاری...
+                </div>
+            </div>
+        </div>
+        
+        <div class="card mt-3">
+            <div class="card-header">
+                <h6><i class="fas fa-chart-bar"></i> آمار سریع</h6>
+            </div>
+            <div class="card-body">
+                <div class="row text-center">
+                    <div class="col-6">
+                        <h4 class="text-primary" id="activeSites">-</h4>
+                        <small class="text-muted">سایت فعال</small>
+                    </div>
+                    <div class="col-6">
+                        <h4 class="text-success" id="totalProducts">-</h4>
+                        <small class="text-muted">کل محصولات</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Progress Modal -->
+<div class="modal fade" id="progressModal" tabindex="-1" data-bs-backdrop="static">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-spinner fa-spin"></i> اسکرپینگ در حال انجام
+                </h5>
+            </div>
+            <div class="modal-body text-center">
+                <div class="progress mb-3">
+                    <div class="progress-bar progress-bar-striped progress-bar-animated" 
+                         role="progressbar" style="width: 0%"></div>
+                </div>
+                <p id="progressText">در حال آماده‌سازی...</p>
+                <small class="text-muted">لطفاً صفحه را نبندید</small>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    loadQuickStats();
+    loadLastRunInfo();
+    
+    // Form submission
+    document.getElementById('manualScrapingForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        startScraping();
+    });
+});
+
+function startScraping() {
+    const form = document.getElementById('manualScrapingForm');
+    const formData = new FormData(form);
+    
+    // Show progress modal
+    const modal = new bootstrap.Modal(document.getElementById('progressModal'));
+    modal.show();
+    
+    // Disable start button
+    document.getElementById('startScrapingBtn').disabled = true;
+    
+    fetch('{{ url_for("main.manual_scraping") }}', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => {
+        if (response.ok) {
+            showAlert('success', 'اسکرپینگ با موفقیت شروع شد');
+            
+            // Start monitoring progress
+            monitorProgress();
+        } else {
+            throw new Error('Failed to start scraping');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showAlert('error', 'خطا در شروع اسکرپینگ');
+        modal.hide();
+        document.getElementById('startScrapingBtn').disabled = false;
+    });
+}
+
+function monitorProgress() {
+    let progress = 0;
+    const progressBar = document.querySelector('.progress-bar');
+    const progressText = document.getElementById('progressText');
+    
+    const interval = setInterval(() => {
+        progress += Math.random() * 10;
+        
+        if (progress < 90) {
+            progressBar.style.width = progress + '%';
+            
+            if (progress < 30) {
+                progressText.textContent = 'در حال اتصال به سایت‌ها...';
+            } else if (progress < 60) {
+                progressText.textContent = 'در حال استخراج محصولات...';
+            } else {
+                progressText.textContent = 'در حال پردازش قیمت‌ها...';
+            }
+        } else {
+            // Check actual status
+            checkScrapingStatus(interval);
+        }
+    }, 2000);
+}
+
+function checkScrapingStatus(interval) {
+    fetch('/api/scraping/status')
+    .then(response => response.json())
+    .then(data => {
+        if (data.completed) {
+            clearInterval(interval);
+            
+            const progressBar = document.querySelector('.progress-bar');
+            const progressText = document.getElementById('progressText');
+            
+            progressBar.style.width = '100%';
+            progressBar.classList.remove('progress-bar-animated');
+            progressBar.classList.add('bg-success');
+            progressText.textContent = 'اسکرپینگ تکمیل شد!';
+            
+            setTimeout(() => {
+                const modal = bootstrap.Modal.getInstance(document.getElementById('progressModal'));
+                modal.hide();
+                
+                // Redirect to dashboard
+                window.location.href = '{{ url_for("main.scraping_dashboard") }}';
+            }, 2000);
+        }
+    })
+    .catch(error => {
+        console.error('Status check error:', error);
+    });
+}
+
+function loadQuickStats() {
+    fetch('/api/scraping/quick-stats')
+    .then(response => response.json())
+    .then(data => {
+        document.getElementById('activeSites').textContent = data.active_sites || '0';
+        document.getElementById('totalProducts').textContent = (data.total_products || 0).toLocaleString('fa-IR');
+    })
+    .catch(error => {
+        console.error('Quick stats error:', error);
+    });
+}
+
+function loadLastRunInfo() {
+    fetch('/api/scraping/last-run')
+    .then(response => response.json())
+    .then(data => {
+        const container = document.getElementById('lastRunInfo');
+        if (data.last_run) {
+            container.innerHTML = `
+                <strong>زمان:</strong> ${new Date(data.last_run.start_time).toLocaleString('fa-IR')}<br>
+                <strong>وضعیت:</strong> <span class="badge bg-${data.last_run.status === 'completed' ? 'success' : 'danger'}">${data.last_run.status}</span><br>
+                <strong>محصولات:</strong> ${data.last_run.products_scraped || 0}
+            `;
+        } else {
+            container.textContent = 'هیچ اجرای قبلی یافت نشد';
+        }
+    })
+    .catch(error => {
+        console.error('Last run info error:', error);
+        document.getElementById('lastRunInfo').textContent = 'خطا در بارگذاری اطلاعات';
+    });
+}
+</script>
+{% endblock %}

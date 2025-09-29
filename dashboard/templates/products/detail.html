@@ -1,0 +1,254 @@
+{% extends "base.html" %}
+
+{% block title %}{{ product.name }} - {{ super() }}{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1><i class="fas fa-box"></i> جزئیات محصول</h1>
+    <div class="btn-group">
+        <a href="{{ url_for('main.products') }}" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-right"></i> بازگشت به لیست
+        </a>
+        {% if current_user.is_admin %}
+        <a href="{{ url_for('main.edit_product', product_id=product.id) }}" class="btn btn-primary">
+            <i class="fas fa-edit"></i> ویرایش
+        </a>
+        {% endif %}
+    </div>
+</div>
+
+<div class="row">
+    <!-- Product Information -->
+    <div class="col-md-8">
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5><i class="fas fa-info-circle"></i> اطلاعات محصول</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-8">
+                        <h3>{{ product.name }}</h3>
+                        {% if product.sku %}
+                        <p class="text-muted">کد محصول: {{ product.sku }}</p>
+                        {% endif %}
+                        <p><strong>دسته بندی:</strong> {{ product.category }}</p>
+                        {% if product.description %}
+                        <p><strong>توضیحات:</strong></p>
+                        <p>{{ product.description }}</p>
+                        {% endif %}
+                        
+                        <div class="mt-3">
+                            <span class="badge bg-{{ 'success' if product.is_active else 'secondary' }} me-2">
+                                {{ 'فعال' if product.is_active else 'غیرفعال' }}
+                            </span>
+                            {% if product.is_monitored %}
+                            <span class="badge bg-info">تحت نظارت</span>
+                            {% endif %}
+                            {% if product.woocommerce_id %}
+                            <span class="badge bg-warning">WC: {{ product.woocommerce_id }}</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="col-md-4 text-center">
+                        {% if product.image_url %}
+                        <img src="{{ product.image_url }}" alt="{{ product.name }}" class="img-fluid rounded">
+                        {% else %}
+                        <div class="bg-light rounded d-flex align-items-center justify-content-center" style="height: 200px;">
+                            <i class="fas fa-image fa-3x text-muted"></i>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Price History Chart -->
+        {% if trends %}
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5><i class="fas fa-chart-line"></i> روند قیمت (30 روز اخیر)</h5>
+            </div>
+            <div class="card-body">
+                <canvas id="priceChart" height="100"></canvas>
+            </div>
+        </div>
+        {% endif %}
+        
+        <!-- Recent Price History -->
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="fas fa-history"></i> تاریخچه قیمت‌ها</h5>
+            </div>
+            <div class="card-body">
+                {% if price_history %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>تاریخ</th>
+                                <th>سایت</th>
+                                <th>قیمت سایت</th>
+                                <th>قیمت میانگین</th>
+                                <th>حداقل</th>
+                                <th>حداکثر</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for price in price_history %}
+                            <tr>
+                                <td>{{ price.scraped_at|datetime }}</td>
+                                <td>{{ price.site_name }}</td>
+                                <td>
+                                    {% if price.site_price %}
+                                        {{ price.site_price|currency }}
+                                    {% else %}
+                                        <span class="text-muted">-</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if price.avg_price %}
+                                        <strong>{{ price.avg_price|currency }}</strong>
+                                    {% else %}
+                                        <span class="text-muted">-</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if price.min_price %}
+                                        {{ price.min_price|currency }}
+                                    {% else %}
+                                        <span class="text-muted">-</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if price.max_price %}
+                                        {{ price.max_price|currency }}
+                                    {% else %}
+                                        <span class="text-muted">-</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <p class="text-muted">هنوز قیمتی برای این محصول ثبت نشده است.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <!-- Price Summary Sidebar -->
+    <div class="col-md-4">
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5><i class="fas fa-tags"></i> خلاصه قیمت</h5>
+            </div>
+            <div class="card-body">
+                {% if product.current_avg_price %}
+                <div class="text-center mb-3">
+                    <h3 class="text-success">{{ product.current_avg_price|currency }}</h3>
+                    <small class="text-muted">قیمت میانگین فعلی</small>
+                </div>
+                
+                <hr>
+                
+                <div class="d-flex justify-content-between mb-2">
+                    <span>کمترین قیمت:</span>
+                    <strong class="text-info">{{ product.current_min_price|currency if product.current_min_price else '-' }}</strong>
+                </div>
+                <div class="d-flex justify-content-between mb-2">
+                    <span>بیشترین قیمت:</span>
+                    <strong class="text-warning">{{ product.current_max_price|currency if product.current_max_price else '-' }}</strong>
+                </div>
+                
+                {% if trends %}
+                <hr>
+                <div class="d-flex justify-content-between mb-2">
+                    <span>روند قیمت:</span>
+                    <span class="badge bg-{{ 'success' if trends.trend_direction == 'increasing' else 'danger' if trends.trend_direction == 'decreasing' else 'secondary' }}">
+                        {{ 'صعودی' if trends.trend_direction == 'increasing' else 'نزولی' if trends.trend_direction == 'decreasing' else 'ثابت' }}
+                    </span>
+                </div>
+                <div class="d-flex justify-content-between mb-2">
+                    <span>تغییر درصدی:</span>
+                    <span class="text-{{ 'success' if trends.trend_percentage > 0 else 'danger' if trends.trend_percentage < 0 else 'muted' }}">
+                        {{ trends.trend_percentage|round(1) }}%
+                    </span>
+                </div>
+                {% endif %}
+                {% else %}
+                <p class="text-muted text-center">اطلاعات قیمتی موجود نیست</p>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- Sites Information -->
+        <div class="card">
+            <div class="card-header">
+                <h6><i class="fas fa-globe"></i> سایت‌های مرتبط</h6>
+            </div>
+            <div class="card-body">
+                {% if product.site_urls %}
+                    {% for site_name, url in product.site_urls.items() %}
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span>{{ site_name }}</span>
+                        <a href="{{ url }}" target="_blank" class="btn btn-sm btn-outline-primary">
+                            <i class="fas fa-external-link-alt"></i>
+                        </a>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                <p class="text-muted small">هیچ سایتی ثبت نشده</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+{% if trends and trends.price_history %}
+<script>
+// Price trend chart
+const ctx = document.getElementById('priceChart').getContext('2d');
+new Chart(ctx, {
+    type: 'line',
+    data: {
+        labels: [{% for entry in trends.price_history %}'{{ entry.date }}'{% if not loop.last %},{% endif %}{% endfor %}],
+        datasets: [{
+            label: 'قیمت میانگین',
+            data: [{% for entry in trends.price_history %}{{ entry.avg_price }}{% if not loop.last %},{% endif %}{% endfor %}],
+            borderColor: '#007bff',
+            backgroundColor: 'rgba(0, 123, 255, 0.1)',
+            tension: 0.1,
+            fill: true
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+            y: {
+                beginAtZero: false,
+                ticks: {
+                    callback: function(value) {
+                        return new Intl.NumberFormat('fa-IR').format(value) + ' ریال';
+                    }
+                }
+            }
+        },
+        plugins: {
+            tooltip: {
+                callbacks: {
+                    label: function(context) {
+                        return 'قیمت: ' + new Intl.NumberFormat('fa-IR').format(context.parsed.y) + ' ریال';
+                    }
+                }
+            }
+        }
+    }
+});
+</script>
+{% endif %}
+{% endblock %}

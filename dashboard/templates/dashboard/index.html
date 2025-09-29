@@ -1,0 +1,334 @@
+{% extends "base.html" %}
+
+{% block title %}داشبورد - {{ super() }}{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h1 class="mb-4">
+            <i class="fas fa-tachometer-alt"></i>
+            داشبورد سیستم نظارت قیمت قطعات خودرو
+        </h1>
+    </div>
+</div>
+
+<!-- System Stats Cards -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card bg-primary text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4>{{ db_stats.total_products|default(0)|number_format }}</h4>
+                        <p class="mb-0">کل محصولات</p>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-box fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3">
+        <div class="card bg-success text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4>{{ db_stats.active_products|default(0)|number_format }}</h4>
+                        <p class="mb-0">محصولات فعال</p>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-check-circle fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3">
+        <div class="card bg-info text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4>{{ db_stats.recent_price_entries_24h|default(0)|number_format }}</h4>
+                        <p class="mb-0">قیمت‌های امروز</p>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-tags fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3">
+        <div class="card bg-warning text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4>{{ scraping_perf.success_rate_7d|default(0)|round(1) }}%</h4>
+                        <p class="mb-0">نرخ موفقیت</p>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-chart-line fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- System Health -->
+<div class="row mb-4">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="fas fa-server"></i> وضعیت سیستم</h5>
+            </div>
+            <div class="card-body">
+                {% if system_stats %}
+                <div class="row">
+                    <div class="col-6">
+                        <canvas id="systemStatsChart" width="200" height="200"></canvas>
+                    </div>
+                    <div class="col-6">
+                        <ul class="list-group list-group-flush">
+                            <li class="list-group-item d-flex justify-content-between">
+                                <span>CPU:</span>
+                                <span class="badge bg-{{ 'danger' if system_stats.cpu_percent > 80 else 'success' }}">
+                                    {{ system_stats.cpu_percent|round(1) }}%
+                                </span>
+                            </li>
+                            <li class="list-group-item d-flex justify-content-between">
+                                <span>Memory:</span>
+                                <span class="badge bg-{{ 'danger' if system_stats.memory_percent > 85 else 'success' }}">
+                                    {{ system_stats.memory_percent|round(1) }}%
+                                </span>
+                            </li>
+                            <li class="list-group-item d-flex justify-content-between">
+                                <span>Disk:</span>
+                                <span class="badge bg-{{ 'danger' if system_stats.disk_percent > 90 else 'success' }}">
+                                    {{ system_stats.disk_percent|round(1) }}%
+                                </span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+                {% else %}
+                <p class="text-muted">اطلاعات سیستم در دسترس نیست</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="fas fa-globe"></i> وضعیت سایت‌ها</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-sm">
+                        <tbody>
+                            {% for site_name, status in site_status.items() %}
+                            <tr>
+                                <td>{{ site_name }}</td>
+                                <td>
+                                    <span class="badge bg-{{ 'success' if status.active and status.available else 'danger' }}">
+                                        {{ 'فعال' if status.active and status.available else 'غیرفعال' }}
+                                    </span>
+                                </td>
+                                <td class="text-muted small">
+                                    {{ status.last_success|datetime if status.last_success else 'هرگز' }}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Activities -->
+<div class="row mb-4">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="fas fa-history"></i> فعالیت‌های اخیر</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>زمان</th>
+                                <th>سایت</th>
+                                <th>وضعیت</th>
+                                <th>محصولات</th>
+                                <th>مدت زمان</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for log in recent_logs %}
+                            <tr>
+                                <td>{{ log.start_time|datetime }}</td>
+                                <td>{{ log.site_name }}</td>
+                                <td>
+                                    <span class="badge bg-{{ log.status|status_badge }}">
+                                        {{ log.status }}
+                                    </span>
+                                </td>
+                                <td>{{ log.products_scraped or 0 }}</td>
+                                <td>
+                                    {% if log.duration_seconds %}
+                                        {{ log.duration_seconds }} ثانیه
+                                    {% else %}
+                                        -
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="fas fa-chart-pie"></i> آمار دسته‌بندی</h5>
+            </div>
+            <div class="card-body">
+                {% if category_stats %}
+                <canvas id="categoryChart" width="300" height="300"></canvas>
+                {% else %}
+                <p class="text-muted">اطلاعات آماری در دسترس نیست</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Actions -->
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="fas fa-bolt"></i> عملیات سریع</h5>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2 d-md-flex">
+                    {% if current_user.is_admin %}
+                    <a href="{{ url_for('main.manual_scraping') }}" class="btn btn-primary">
+                        <i class="fas fa-play"></i> شروع اسکرپینگ
+                    </a>
+                    <button class="btn btn-success" onclick="updatePrices('avg')">
+                        <i class="fas fa-sync"></i> به‌روزرسانی قیمت‌ها
+                    </button>
+                    <a href="{{ url_for('api.export_csv_api', price_type='woocommerce') }}" class="btn btn-info">
+                        <i class="fas fa-download"></i> دانلود CSV
+                    </a>
+                    {% endif %}
+                    <a href="{{ url_for('main.products') }}" class="btn btn-outline-secondary">
+                        <i class="fas fa-list"></i> مشاهده محصولات
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// System Stats Chart
+{% if system_stats %}
+const systemCtx = document.getElementById('systemStatsChart').getContext('2d');
+new Chart(systemCtx, {
+    type: 'doughnut',
+    data: {
+        labels: ['CPU', 'Memory', 'Disk'],
+        datasets: [{
+            data: [{{ system_stats.cpu_percent }}, {{ system_stats.memory_percent }}, {{ system_stats.disk_percent }}],
+            backgroundColor: ['#dc3545', '#ffc107', '#17a2b8']
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                position: 'bottom'
+            }
+        }
+    }
+});
+{% endif %}
+
+// Category Stats Chart
+{% if category_stats %}
+const categoryCtx = document.getElementById('categoryChart').getContext('2d');
+new Chart(categoryCtx, {
+    type: 'pie',
+    data: {
+        labels: [{% for category in category_stats.keys() %}'{{ category }}'{% if not loop.last %},{% endif %}{% endfor %}],
+        datasets: [{
+            data: [{% for stats in category_stats.values() %}{{ stats.product_count }}{% if not loop.last %},{% endif %}{% endfor %}],
+            backgroundColor: [
+                '#007bff', '#28a745', '#dc3545', '#ffc107', '#17a2b8',
+                '#6f42c1', '#e83e8c', '#fd7e14', '#20c997', '#6c757d'
+            ]
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                display: false
+            }
+        }
+    }
+});
+{% endif %}
+
+// Update prices function
+function updatePrices(priceType) {
+    if (confirm('آیا مطمئن هستید که می‌خواهید قیمت‌ها را به‌روزرسانی کنید؟')) {
+        fetch('{{ url_for("main.update_woocommerce_prices") }}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token() }}'
+            },
+            body: JSON.stringify({
+                price_type: priceType,
+                dry_run: false
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('به‌روزرسانی قیمت‌ها شروع شد');
+            } else {
+                alert('خطا: ' + data.error);
+            }
+        })
+        .catch(error => {
+            alert('خطا در ارتباط با سرور');
+            console.error('Error:', error);
+        });
+    }
+}
+
+// Auto refresh (every 5 minutes)
+setTimeout(function() {
+    location.reload();
+}, 300000);
+</script>
+{% endblock %}

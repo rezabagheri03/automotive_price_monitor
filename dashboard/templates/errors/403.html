@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+
+{% block title %}دسترسی مجاز نیست - {{ super() }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row justify-content-center">
+        <div class="col-md-6 text-center">
+            <div class="error-page">
+                <h1 class="display-1 text-warning">403</h1>
+                <h2 class="mb-4">دسترسی مجاز نیست</h2>
+                <p class="lead text-muted mb-4">
+                    شما به این صفحه دسترسی ندارید. لطفاً با مدیر سیستم تماس بگیرید.
+                </p>
+                
+                <div class="mb-4">
+                    <i class="fas fa-ban fa-5x text-muted opacity-25"></i>
+                </div>
+                
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle"></i>
+                    <strong>نکته:</strong> برای دسترسی به این بخش، شما باید مجوزهای مناسب داشته باشید.
+                </div>
+                
+                <div class="d-grid gap-2 d-md-flex justify-content-md-center mb-4">
+                    <a href="{{ url_for('main.dashboard') }}" class="btn btn-primary me-md-2">
+                        <i class="fas fa-home"></i> بازگشت به داشبورد
+                    </a>
+                    <button onclick="history.back()" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-right"></i> صفحه قبلی
+                    </button>
+                </div>
+                
+                <div class="row">
+                    <div class="col-12">
+                        <div class="card">
+                            <div class="card-header">
+                                <h6><i class="fas fa-user-shield"></i> سطوح دسترسی</h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="row text-center">
+                                    <div class="col-md-4">
+                                        <i class="fas fa-eye text-info fa-2x mb-2"></i>
+                                        <h6>مشاهده‌گر</h6>
+                                        <small class="text-muted">فقط مشاهده داشبورد</small>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <i class="fas fa-user text-primary fa-2x mb-2"></i>
+                                        <h6>کاربر</h6>
+                                        <small class="text-muted">مدیریت محدود</small>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <i class="fas fa-user-crown text-warning fa-2x mb-2"></i>
+                                        <h6>مدیر</h6>
+                                        <small class="text-muted">دسترسی کامل</small>
+                                    </div>
+                                </div>
+                                
+                                <hr>
+                                
+                                <p class="text-muted small mb-0">
+                                    سطح دسترسی فعلی شما: 
+                                    <strong class="text-primary">
+                                        {% if current_user.is_authenticated %}
+                                            {{ 'مدیر' if current_user.is_admin else 'کاربر عادی' }}
+                                        {% else %}
+                                            ورود نکرده
+                                        {% endif %}
+                                    </strong>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.error-page {
+    padding: 4rem 0;
+}
+.error-page h1 {
+    font-size: 8rem;
+    font-weight: bold;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+}
+</style>
+{% endblock %}

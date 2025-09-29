@@ -1,0 +1,3 @@
+"""
+Automotive Scraper package
+"""
